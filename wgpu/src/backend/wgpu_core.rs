@@ -1522,6 +1522,15 @@ impl dispatch::DeviceInterface for CoreDevice {
         .into()
     }
 
+    fn create_render_pipeline_async(
+        &self,
+        desc: &crate::RenderPipelineDescriptor<'_>,
+    ) -> Pin<Box<dyn dispatch::CreateRenderPipelineFuture>> {
+        // Native creates the pipeline synchronously; errors go to the error scopes.
+        let pipeline = self.create_render_pipeline(desc);
+        Box::pin(ready(Ok(pipeline)))
+    }
+
     fn create_compute_pipeline(
         &self,
         desc: &crate::ComputePipelineDescriptor<'_>,
@@ -1575,6 +1584,14 @@ impl dispatch::DeviceInterface for CoreDevice {
             error_sink: Arc::clone(&self.error_sink),
         }
         .into()
+    }
+
+    fn create_compute_pipeline_async(
+        &self,
+        desc: &crate::ComputePipelineDescriptor<'_>,
+    ) -> Pin<Box<dyn dispatch::CreateComputePipelineFuture>> {
+        let pipeline = self.create_compute_pipeline(desc);
+        Box::pin(ready(Ok(pipeline)))
     }
 
     unsafe fn create_pipeline_cache(
